@@ -1,0 +1,26 @@
+# Зависимости
+node_modules/
+
+# Локальная база данных
+avrora.db
+*.sqlite
+*.sqlite3
+
+# Переменные окружения
+.env
+.env.local
+
+# Скомпилированные бинарники (вы их насобирали)
+server-linux
+server-macos
+server-win.exe
+dist/
+
+# Файлы отладки и IDE
+.vscode/
+.idea/
+*.log
+
+# Системные файлы
+.DS_Store
+Thumbs.db

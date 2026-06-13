@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АО АПО "Аврора" | Мониторинг сельхозтехники</title>
+    <!-- Leaflet для карт -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Иконки Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+</head>
+<body>
+    <!-- Форма логина (показывается, если пользователь не авторизован) -->
+<div id="login-container" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #2e7d32, #4caf50);">
+    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.2); text-align: center; width: 300px;">
+        <h2 style="margin-bottom: 20px; color: #2e7d32;">АО АПО "Аврора"</h2>
+        <input type="text" id="login-username" placeholder="Логин" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        <input type="password" id="login-password" placeholder="Пароль" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">
+        <button onclick="doLogin()" style="width: 100%; padding: 10px; background: #2e7d32; color: white; border: none; border-radius: 5px; cursor: pointer;">Войти</button>
+        <div id="login-error" style="color: red; margin-top: 10px;"></div>
+    </div>
+</div>
+
+<!-- Основной контент сайта (скрыт, пока пользователь не войдёт) -->
+<div id="main-app" style="display: none;">
+    <!-- СЮДА ПЕРЕНЕСИТЕ ВЕСЬ СУЩЕСТВУЮЩИЙ КОНТЕНТ (всю разметку, которая была внутри <body>) -->
+    <!-- Например: ваш <header>, <main>, <footer> и т.д. -->
+</div>
+   <!-- Шапка сайта -->
+<header class="main-header">
+<!-- Шапка сайта -->
+<header class="main-header">
+    <div class="container">
+        <div class="header-content">
+            <!-- ЛОГОТИП С ТЕКСТОМ ВНУТРИ ТРЕУГОЛЬНИКА -->
+            <div class="logo-section">
+    <div class="logo-container">
+        <div class="logo-triangle-huge">
+            <svg width="140" height="130" viewBox="0 0 140 140" fill="none">
+                <path d="M65 30 L135 125 L5 125 Z" fill="#10B981" stroke="#FFFFFF" stroke-width="4" class="triangle-main"/>
+                <text x="70" y="113" text-anchor="middle" fill="white" font-size="13" font-weight="600" font-family="Arial, sans-serif" letter-spacing="1" text-transform="uppercase" class="triangle-text">
+                    <tspan x="70" y="90">АО АПО</tspan>
+                    <tspan x="68" y="105">АВРОРА</tspan>
+                </text>
+            </svg>
+        </div>
+        <div class="logo-text-under">
+            <p class="logo-subtitle">Мониторинг сельхозтехники</p>
+        </div>
+    </div>
+</div>
+            
+            <!-- Статистика -->
+            <div class="header-stats">
+                <div class="stat-card">
+                    <i class="fas fa-satellite-dish"></i>
+                    <div>
+                        <span class="stat-label">Техника онлайн</span>
+                        <span class="stat-value" id="online-count">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-play-circle"></i>
+                    <div>
+                        <span class="stat-label">В работе</span>
+                        <span class="stat-value" id="working-count">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <span class="stat-label">Обновлено</span>
+                        <span class="stat-value" id="update-time">--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Основной контент -->
+    <main class="container">
+        <!-- Панель управления -->
+        <section class="control-panel">
+            <h2><i class="fas fa-sliders-h"></i> Управление отображением</h2>
+            <div class="control-grid">
+                <div class="control-group">
+                    <label for="type-filter"><i class="fas fa-filter"></i> Тип техники:</label>
+                    <select id="type-filter" class="modern-select">
+                        <option value="all">Все типы техники</option>
+                        <option value="tractor"> Тракторы</option>
+                        <option value="combine"> Комбайны</option>
+                        <option value="truck"> Грузовики</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="status-filter"><i class="fas fa-tags"></i> Статус:</label>
+                    <select id="status-filter" class="modern-select">
+                        <option value="all">Все статусы</option>
+                        <option value="working">✅ В работе</option>
+                        <option value="idle">⏸️ Простой</option>
+                        <option value="repair">🔧 Ремонт</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button id="refresh-data" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Обновить данные
+                    </button>
+                    <button id="reset-filters" class="btn btn-secondary">
+                        <i class="fas fa-undo"></i> Сбросить фильтры
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Карта -->
+        <section class="map-section">
+            <div class="section-header">
+                <h2><i class="fas fa-map-marked-alt"></i> Карта расположения техники</h2>
+                <div class="map-info">
+                    <span><i class="fas fa-map-pin"></i> Липецкая область, Задонск</span>
+                    <span><i class="fas fa-expand-arrows-alt"></i> Масштаб: <span id="map-scale">1:10000</span></span>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="map">Загрузка карты...</div>
+                <div class="map-overlay">
+                    <div class="legend-card">
+                        <h4><i class="fas fa-key"></i> Статус машины</h4>
+                        <div class="legend-content">
+                            <div class="legend-item">
+                                <span class="legend-dot" style="background: #00ff00;"></span>
+                                <span style="color: #000000; font-weight: 500;">В работе</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot" style="background: #F59E0B;"></span>
+                                <span style="color: #000000; font-weight: 500;">Простой</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot" style="background: #EF4444;"></span>
+                                <span style="color: #000000; font-weight: 500;">В ремоте</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="coordinates-card">
+                        <h4><i class="fas fa-crosshairs"></i> Координаты</h4>
+                        <div id="coordinates">52.6090, 39.5980</div>
+                        <small>Центр карты</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Список техники -->
+        <section class="technique-section">
+            <div class="section-header">
+                <h2><i class="fas fa-list-ul"></i> Список сельхозтехники</h2>
+                <div class="section-stats">
+                    <span class="badge total">Всего: <span id="total-count">0</span></span>
+                    <span class="badge working">В работе: <span id="working-badge">0</span></span>
+                    <span class="badge idle">Простой: <span id="idle-badge">0</span></span>
+                    <span class="badge repair">Ремонт: <span id="repair-badge">0</span></span>
+                </div>
+            </div>
+            
+            <div class="technique-container">
+                <div id="tech-list" class="tech-list">
+                    <!-- Здесь появится список техники -->
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Загрузка данных о технике...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Статистика -->
+        <section class="stats-section">
+            <h2><i class="fas fa-chart-line"></i> Статистика эффективности</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-icon">
+                        <i class="fas fa-gas-pump"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Средний уровень топлива</h4>
+                        <div class="stat-progress">
+                            <div class="progress-bar" id="fuel-progress"></div>
+                        </div>
+                        <span class="stat-number" id="avg-fuel">65%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Средняя эффективность</h4>
+                        <div class="stat-progress">
+                            <div class="progress-bar efficiency" id="efficiency-progress"></div>
+                        </div>
+                        <span class="stat-number" id="avg-efficiency">89%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Выполнение плана</h4>
+                        <div class="stat-progress">
+                            <div class="progress-bar plan" id="plan-progress"></div>
+                        </div>
+                        <span class="stat-number" id="plan-percent">78%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span>АО АПО "Аврора"</span>
+                    </div>
+                    <p>Система мониторинга сельскохозяйственной техники</p>
+                    <p class="footer-contact">
+                        <i class="fas fa-map-marker-alt"></i> Липецкая область, г. Задонск
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Контакты</h4>
+                    <p><i class="fas fa-phone"></i> +7 (474) 123-45-67</p>
+                    <p><i class="fas fa-envelope"></i> info@avrora-agro.ru</p>
+                    <p><i class="fas fa-globe"></i> www.avrora-agro.ru</p>
+                </div>
+    </div>
+</div>
+            
+            <div class="footer-bottom">
+                <p>© 2025 АО АПО "Аврора". Все права защищены.</p>
+                <p class="footer-note">Данные обновляются в реальном времени</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Подключаем библиотеки -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Наши JavaScript файлы -->
+    <script src="js/data.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

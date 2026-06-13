@@ -1,0 +1,28 @@
+{
+  "name": "avrora-monitoring",
+  "version": "1.0.0",
+  "description": "Курсовая работа по специальности \"Информационные системы и программирование\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aBetterSpark/avrora-monitoring.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aBetterSpark/avrora-monitoring/issues"
+  },
+  "homepage": "https://github.com/aBetterSpark/avrora-monitoring#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "sqlite3": "^6.0.1"
+  }
+}
